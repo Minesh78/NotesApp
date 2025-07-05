@@ -22,7 +22,10 @@ app.use(express.json());
 
 app.use(
 	cors({
-		origin: "*",
+		origin: [
+			"https://notes-app-k8ik.vercel.app", // Your frontend
+			"http://localhost:5173", // Local dev, if needed
+		],
 		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 		allowedHeaders: ["Content-Type", "Authorization"],
 		credentials: true, // Only if you use cookies or auth headers
