@@ -2,7 +2,7 @@ import axios from "axios";
 // import { BASE_URL } from "./constants";
 
 const axiosInstance = axios.create({
-	baseURL: `${process.env.REACT_APP_BASE_URL}`,
+	baseURL:import.meta.env.VITE_API_BASE_URL,
 	timeout: 1000,
 	headers: {
 		"Content-Type": "application/json",
