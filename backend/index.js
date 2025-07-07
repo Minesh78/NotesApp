@@ -8,6 +8,19 @@ mongoose
 	.then(() => console.log("Connected to MongoDB"))
 	.catch((error) => console.error("MongoDB connection error:", error));
 
+
+
+// mongoose
+//   .connect(process.env.MONGODB_CONNECTION_STRING)
+//   .then(() => {
+//     console.log("Connected to MongoDB");
+//     app.listen(PORT, () => {
+//       console.log(`Server is running on port ${PORT}`);
+//     });
+//   })
+//   .catch((error) => console.error("MongoDB connection error:", error));
+
+
 const User = require("./models/user.model");
 const Note = require("./models/note.model");
 
@@ -98,8 +111,9 @@ app.post("/login", async (req, res) => {
 			.status(400)
 			.json({ error: true, message: "Password is Required" });
 	}
-
-	const userInfo = await User.findOne({ email: email });
+	
+	try {
+		const userInfo = await User.findOne({ email: email });
 
 	if (!userInfo) {
 		return res.status(400).json("User Not Found");
@@ -122,6 +136,10 @@ app.post("/login", async (req, res) => {
 			error: true,
 			message: "Invalid Credentials",
 		});
+	}
+	} catch (error) {
+		
+		console.log(error);
 	}
 });
 
