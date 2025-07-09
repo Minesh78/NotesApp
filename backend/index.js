@@ -8,8 +8,6 @@ mongoose
 	.then(() => console.log("Connected to MongoDB"))
 	.catch((error) => console.error("MongoDB connection error:", error));
 
-
-
 // mongoose
 //   .connect(process.env.MONGODB_CONNECTION_STRING)
 //   .then(() => {
@@ -19,7 +17,6 @@ mongoose
 //     });
 //   })
 //   .catch((error) => console.error("MongoDB connection error:", error));
-
 
 const User = require("./models/user.model");
 const Note = require("./models/note.model");
@@ -35,13 +32,10 @@ app.use(express.json());
 
 app.use(
 	cors({
-		origin: [
-			"https://notes-app-k8ik.vercel.app", // Your frontend
-			"http://localhost:5173", // Local dev, if needed
-		],
+		origin: "*",
 		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-		allowedHeaders: ["Content-Type", "Authorization"],
-		credentials: true, // Only if you use cookies or auth headers
+		// allowedHeaders: ["Content-Type", "Authorization"],
+		// credentials: true, // Only if you use cookies or auth headers
 	})
 );
 
@@ -86,7 +80,7 @@ app.post("/create-account", async (req, res) => {
 
 	await user.save();
 
-	const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, {
+	const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
 		expiresIn: "36000m",
 	});
 
@@ -111,16 +105,21 @@ app.post("/login", async (req, res) => {
 			.status(400)
 			.json({ error: true, message: "Password is Required" });
 	}
-	
-	try {
-		const userInfo = await User.findOne({ email: email });
+
+	const userInfo = await User.findOne({ email: email });
 
 	if (!userInfo) {
 		return res.status(400).json("User Not Found");
 	}
 
 	if (userInfo.email == email && userInfo.password == password) {
-		const user = { user: userInfo };
+		const user = {
+			user: {
+				_id: userInfo._id,
+				email: userInfo.email,
+				fullName: userInfo.fullName,
+			},
+		};
 		const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
 			expiresIn: "36000m",
 		});
@@ -137,10 +136,6 @@ app.post("/login", async (req, res) => {
 			message: "Invalid Credentials",
 		});
 	}
-	} catch (error) {
-		
-		console.log(error);
-	}
 });
 
 //Get User
@@ -150,7 +145,7 @@ app.get("/get-user", authenticateToken, async (req, res) => {
 	const isUser = await User.findOne({ _id: user._id });
 
 	if (!isUser) {
-		return res.sendStatus(401).json({ error: true, message: "User not found" });
+		return res.status(401).json({ error: true, message: "User not found" });
 	}
 
 	return res.json({
